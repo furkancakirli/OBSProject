@@ -1,0 +1,250 @@
+﻿@model OBSEntity.Entities.StudentEntity
+@{
+    ViewData["Title"] = "Home Page";
+}
+@*<link href="../Content/bootstrap.min.css.map" rel="stylesheet" />*@
+
+
+<h1 class="display-4">Öğrenci Listesi</h1>
+<p>
+    <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#supplierModal">Yeni Kayıt</a>
+</p>
+<div class="modal fade furkan" id="supplierModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Öğrenci Ekleme</h2>
+            </div>
+            <div class="modal-body">
+
+
+                <form id="suppliarForm" enctype="multipart/form-data" method="post">
+                    <label>Adı</label>
+                    @Html.TextBoxFor(m=> m.Name, new {@class="form-control"})
+                    <label>Soyadı</label>
+                    @Html.TextBoxFor(m=> m.Surname, new {@class="form-control"})
+                    <label>Telefon Numarası</label>
+                    @Html.TextBoxFor(m=> m.PhoneNumber, new {@class="form-control"})
+                    <label>E Mail</label>
+                    @Html.TextBoxFor(m=> m.EMail, new {@class="form-control"})
+                    <label>Adress</label>
+                    @Html.TextBoxFor(m=> m.Adress, new {@class="form-control"})
+                    <label>Sınıf</label>
+                    @Html.TextBoxFor(m=> m.Class, new {@class="form-control"})
+                </form>
+            </div>
+            <div class="modal-footer">
+                <div class="btn-group">
+                    <a href="#" id="btnSave" class="btn btn-primary mr-2">Kaydet</a>
+                    <a href="#" id="btnCancel" class="btn btn-danger">İptal</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Kayıt Sil</h2>
+            </div>
+            <div class="modal-body">
+                <h3>Silmek İstediğinizden Emin misiniz?</h3>
+
+            </div>
+            <div class="modal-footer">
+                <div class="btn-group">
+                    <a href="#" id="btnDelete" class="btn btn-primary mr-2">Sil</a>
+                    <a href="#" id="btnCancelModal" class="btn btn-danger">İptal</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<table class="table table-bordered">
+    <tr class="btn-primary">
+        <th>
+            Adı
+        </th>
+        <th>
+            Soyadı
+        </th>
+        <th>
+            Telefon Numarası
+        </th>
+        <th>
+            E Mail
+        </th>
+        <th>
+            Adres
+        </th>
+        <th>
+            Sınıf
+        </th>
+        <th>
+            Güncelle
+        </th>
+        <th>
+            Sil
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var student in ViewBag.students)
+    {
+        <tr>
+            <td>
+                @student.Name
+            </td>
+            <td>
+                @student.Surname
+            </td>
+            <td>
+                @student.PhoneNumber
+            </td>
+            <td>
+                @student.EMail
+            </td>
+            <td>
+                @student.Adress
+            </td>
+            <td>
+                @student.Class
+            </td>
+            <td>
+                <a href="#" id="editModal" class="btn btn-primary btn-xs edit-product-link" onclick="EditForm(@student.Id)">Düzenle</a>
+            </td>
+            <td>
+                <a href="#" id="showModal" class="btn btn-danger" onclick="Confirm(@student.Id)">Sil</a>
+            </td>
+        </tr>
+    }
+
+</table>
+
+<input type="hidden" id="productId" />
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script>
+    $(document).ready(function() {
+        console.log("giriş yapıldı");
+
+        $("#btnSave").click(function() {
+            var district = $("#drpDistrict").find("option:selected").val();
+            $("#DistrictId").val(district);
+
+            var supplierFormData = $("#suppliarForm").serialize();
+            console.log(supplierFormData);
+
+            ////var denemedata = $('#suppliarForm').submit(function(e) {
+            ////e.preventDefault();
+
+            var formData = new FormData();
+            //var file = $('#Image')[0].files[0];
+            //supplierFormData.append('file', file);
+
+            $.ajax({
+                type: "POST",
+                url: "/Home/Add",
+                data: supplierFormData,
+                success: function() {
+                    console.log("Success");
+                    window.location.href = "/Home/Index";
+                },
+                error: function(XMLHttpRequest, textStatus, errorThrown) {
+
+                    window.location.href = "/Home/Index";
+                }
+            })
+        })
+    });
+
+    $(function () {
+        $('#file').on('click', function (evt) {
+            evt.preventDefault();
+            $.ajax({
+                url: '@Url.Action("Index","Home")',
+                data: new FormData($("#suppliarForm").serialize()),
+                type: 'post',
+                success: function () {
+                    console.log('Uploaded by jQuery');
+                }
+            });
+        });
+    });
+
+
+    $("#btnCancel").click(function() {
+
+        window.location.href = "/Home/Index";
+    })
+    $("#btnEditCancel").click(function() {
+
+        window.location.href = "/Home/Index";
+    })
+    $("#btnCancelModal").click(function() {
+        window.location.href = "/Home/Index";
+    });
+    var Confirm = function(id) {
+        $("#productId").val(id);
+        $("#deleteModal").modal("show");
+    }
+
+    var EditForm = function(id) {
+        $("#supplierModal").modal("show");
+        $.ajax({
+            type: "GET",
+            url: "/Home/GetStudentById",
+            contenType: "application/json; charset=utf-8",
+            dataType: "json",
+            data: { Id: id },
+            success: function(result) {
+                console.log(result);
+                var id = result.id;
+                var name = result.name;
+                var surname = result.surname;
+                var phoneNumber = result.phoneNumber;
+                var email = result.email;
+                var adress = result.adress;
+                var Class = result.Class;
+
+                $("#Id").val(id);
+                $("#Name").val(name);
+                $("#Surname").val(surname);
+                $("#PhoneNumber").val(phoneNumber);
+                $("#EMail").val(email);
+                $("#Adress").val(adress);
+                $("#Class").val(lass);
+
+            },
+            error: function(error) {
+                console.log("Hata :" + error);
+                //alert("Hata : " + error);
+                window.location.href = "/Home/Index";
+            }
+        })
+    }
+
+    $("#btnDelete").click(function() {
+        var id = $("#productId").val();
+
+        $.ajax({
+            type: "POST",
+            url: "/Home/Delete",
+            data: { Id: id },
+            success: function(result) {
+                $("#deleteModal").modal("hide");
+                $("#productId").val(null);
+                window.location.href = "/Home/Index";
+            },
+            error: function(error) {
+                //alert("Hata : " + error);
+                window.location.href = "/Home/Index";
+            }
+        })
+    })
+
+</script>
